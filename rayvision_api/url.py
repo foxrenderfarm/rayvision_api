@@ -51,6 +51,9 @@ class ApiUrl(str, Enum):
     stopTaskFrames = '/api/render/handle/stopTaskFrames'
     hardwareConfig = '/api/render/hardwareConfig/list'
     showLog = '/api/render/handle/showLog'
+    updateTaskLimit = '/api/render/handle/updateTaskLimit'
+    taskRecord = '/api/render/handle/operate/sdk/taskRecord'
+    loginRecord = '/api/render/handle/operate/sdk/loginRecord'
 
     def __format__(self, format_spec):
         return str.__format__(str(self._value_), format_spec)

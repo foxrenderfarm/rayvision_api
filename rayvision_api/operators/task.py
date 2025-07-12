@@ -207,3 +207,20 @@ class TaskOperator(object):
             'taskIds': task_id_list,
         }
         return self._connect.post(self._connect.url.fullSpeedRendering, data)
+
+    def update_task_limit(self, taskId, taskLimit):
+        """Full to render.
+
+        Args:
+            task_id_list (list of int): Task list.
+            Example:
+                {
+                    "taskIds":[485],
+                }
+        """
+        data = {
+            'taskId': taskId,
+            'taskLimit': taskLimit,
+            
+        }
+        return self._connect.post(self._connect.url.updateTaskLimit, data)
