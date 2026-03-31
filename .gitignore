@@ -3,6 +3,7 @@
 
 # PyCharm project files
 .idea/
+.pytest_cache/
 
 # Vim / Notepad++ temp files
 *~
@@ -20,6 +21,3 @@ result/
 # Coverage output
 .coverage
 /venv/
-
-# npm
-package.json
