@@ -291,55 +291,63 @@ class RayvisionCheck(object):
         cg_id = task_info['task_info']['cg_id']
         plugins = task_info['software_config']['plugins']
         check_keys = ['model', 'ram', 'gpuNum']
+        ram = custom_hardware.get('ram')
         gpu_num = custom_hardware.get('gpuNum')
-        hardware_id = ''
+        hardware_ids = []
         exist_not_support_code = False
         allow_hardware_config = []
-        if task_info['software_config']['cg_name'] == "CINEMA 4D" and task_info['software_config']['cg_version'] in ["2024", "2025"]:
-            if custom_hardware.get('model').lower() in ["1080ti"] and custom_hardware.get('gpuNum').lower() in ["2*gpu"] and self.api.platform in ["21", "59", "61"]:
-                raise HardwareConfigIdError(1000001, "CINEMA 4D 2024&2025 GPU area hardware configuration model does"
-                                                     " not allow 1080Ti with 2*GPU")
+        if 'Default' not in custom_hardware.get('model'):
+            model_list = [custom_hardware.get('model')] if isinstance(custom_hardware.get('model'), str) else custom_hardware.get('model')
+        else:
+            model_list = set([model_item.get('model') for model_item in hardware_config_list])
 
-        for one_hardware_config in hardware_config_list:
-            if not one_hardware_config['status']:
-                continue
-            not_support_cgid = one_hardware_config['notSupportCgId']
-            if not_support_cgid and cg_id in not_support_cgid:
-                if all(map(lambda key: custom_hardware[key] == one_hardware_config[key], check_keys)):
-                    raise NotSupportCGSoftwareError
-            not_support_code = one_hardware_config['notSupportCode']
-            not_support_code_list = [item for item in self.tips_info.keys() if item in not_support_code]
-            if (len(not_support_code_list) > 0) and (custom_hardware["model"] == one_hardware_config["model"]):
-                exist_not_support_code = True
-                continue
-            if one_hardware_config['platform'] != int(platform):
-                continue
-            if len(not_support_code_list) == 0:
-                allow_hardware_config.append(str({'model': one_hardware_config["model"], 'ram': one_hardware_config["ram"],
-                                    'gpuNum': one_hardware_config["gpuNum"]}))
-            if not all(map(lambda key: custom_hardware[key] == one_hardware_config[key], check_keys)):
-                continue
-            not_support_plugin_list = one_hardware_config['notSupportPluginList']
-            if not_support_plugin_list:
-                for plugin_str in not_support_plugin_list:
-                    for plugin_name, plugin_ver in plugins.items():
-                        plugin_data = "%s %s" % (plugin_name, plugin_ver)
-                        re_result = re.findall(plugin_str, plugin_data, re.I)
-                        if re_result and re_result[0]:
-                            raise NotSupportPluginError(1000000, "%s is not support %s%s" % (custom_hardware, plugin_name, plugin_ver))
+        for hardware_item in model_list:
+            custom_hardware_item = {"model": hardware_item, "ram": ram, "gpuNum": gpu_num}
+            if task_info['software_config']['cg_name'] == "CINEMA 4D" and task_info['software_config']['cg_version'] in ["2024", "2025"]:
+                if custom_hardware_item.get('model').lower() in ["1080ti"] and gpu_num.lower() in ["2*gpu"] and self.api.platform in ["21", "59", "61"]:
+                    raise HardwareConfigIdError(1000001, "CINEMA 4D 2024&2025 GPU area hardware configuration model does"
+                                                        " not allow 1080Ti with 2*GPU")
 
-            hardware_id = str(one_hardware_config.get('id', ""))
+            for one_hardware_config in hardware_config_list:
+                if not one_hardware_config['status']:
+                    continue
+                not_support_cgid = one_hardware_config['notSupportCgId']
+                if not_support_cgid and cg_id in not_support_cgid:
+                    if all(map(lambda key: custom_hardware_item[key] == one_hardware_config[key], check_keys)):
+                        raise NotSupportCGSoftwareError
+                not_support_code = one_hardware_config['notSupportCode']
+                not_support_code_list = [item for item in self.tips_info.keys() if item in not_support_code]
+                if (len(not_support_code_list) > 0) and (hardware_item == one_hardware_config["model"]):
+                    exist_not_support_code = True
+                    continue
+                if one_hardware_config['platform'] != int(platform):
+                    continue
+                if len(not_support_code_list) == 0:
+                    allow_hardware_config.append(str({'model': one_hardware_config["model"], 'ram': one_hardware_config["ram"],
+                                        'gpuNum': one_hardware_config["gpuNum"]}))
+                if not all(map(lambda key: custom_hardware_item[key] == one_hardware_config[key], check_keys)):
+                    continue
+                not_support_plugin_list = one_hardware_config['notSupportPluginList']
+                if not_support_plugin_list:
+                    for plugin_str in not_support_plugin_list:
+                        for plugin_name, plugin_ver in plugins.items():
+                            plugin_data = "%s %s" % (plugin_name, plugin_ver)
+                            re_result = re.findall(plugin_str, plugin_data, re.I)
+                            if re_result and re_result[0]:
+                                raise NotSupportPluginError(1000000, "%s is not support %s%s" % (custom_hardware_item, plugin_name, plugin_ver))
+
+                hardware_ids.append(str(one_hardware_config.get('id', "")))
 
         if exist_not_support_code:
             raise NotSupportHardwareCodeError(1000000, "It was detected that the rendering file does not match the hardware settings, please choose from the following options:%s" % ",".join(
                 allow_hardware_config))
-        if not hardware_id:
+        if not hardware_ids:
             raise HardwareConfigIdError(1000000, "Allowed Hardware Configuration Information:%s" % ",".join(
                 allow_hardware_config))
 
         update_hardware_config = {
-            "hardwareConfigId": hardware_id,
-            "ram": custom_hardware["ram"].replace("GB", ""),
+            "hardwareConfigIds": hardware_ids,
+            "ram": ram.replace("GB", ""),
             "graphics_cards_num": gpu_num[0] if gpu_num else "2"
         }
         update_task_info(update_hardware_config, task_path)

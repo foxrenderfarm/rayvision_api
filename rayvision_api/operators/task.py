@@ -225,19 +225,19 @@ class TaskOperator(object):
         }
         return self._connect.post(self._connect.url.updateTaskLimit, data)
     
-    def edit_task_hardware_config(self, taskIds, hardwareConfigId, model, gpuNum, ram):
+    def edit_task_hardware_config(self, taskIds, hardwareConfigIds, model, gpuNum, ram):
         """edit task hardware config.
 
         Args:
             taskIds (list of int): Task list.
-            hardwareConfigId (int): hardware config id.
+            hardwareConfigIds (list of str): hardware config id.
             model (str): model.
             gpuNum (str): Number of GPU card.
             ram(str): Memory size.
             Example:
                 {
                     "taskIds":[485],
-                    "hardwareConfigId": 223,
+                    "hardwareConfigIds": ["223"],
                     "model": "1080Ti",
                     "ram": "64GB",
                     "gpuNum": "2*GPU"
@@ -245,7 +245,7 @@ class TaskOperator(object):
         """
         data = {
             'taskIds': taskIds,
-            'hardwareConfigId': hardwareConfigId,
+            'hardwareConfigIds': hardwareConfigIds,
             'model': model,
             'gpuNum': gpuNum,
             'ram': ram

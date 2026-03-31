@@ -1,8 +1,8 @@
 taskIds:
   type: list
   required: True
-hardwareConfigId:
-  type: integer
+hardwareConfigIds:
+  type: list
   required: True
 model:
   type: string

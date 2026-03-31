@@ -23,6 +23,7 @@ DCC_ID_MAPPINGS = {
     "octane_render": "2014",
     "nuke": "2015",
     "katana": "2016",
+    "unreal engine": "2020",
 }
 
 # The headers of rayvision api.
@@ -73,6 +74,7 @@ CG_SETTING = {
     "2014": "octane_render",
     "2015": "nuke",
     "2016": "katana",
+    "2020": "unreal engine",
 
 }
 
